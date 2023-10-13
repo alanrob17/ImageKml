@@ -2,34 +2,52 @@
 
 This program is used to collect the Google JSON documents that are attached to each of the JPG files in Google Photo.
 
-I intend to join all of the JSON files together into one JSON file that collects all of the photo data for a particular time period. At the moment I am only interested in the data from our 2023 Europe trip.
+This is a sample of the JSON data that Google collects for a photo.
 
-## Work in progress
+```json
+{
+  "title": "20230823_101236.jpg",
+  "description": "",
+  "imageViews": "3",
+  "creationTime": {
+    "timestamp": "1692812685",
+    "formatted": "23 Aug 2023, 17:44:45 UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1692781956",
+    "formatted": "23 Aug 2023, 09:12:36 UTC"
+  },
+  "geoData": {
+    "latitude": 55.8621286,
+    "longitude": -4.252332,
+    "altitude": 70.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 55.8621286,
+    "longitude": -4.252332,
+    "altitude": 70.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "url": "Link to Google Photo",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceFolder": {
+        "localFolderName": ""
+      },
+      "deviceType": "ANDROID_PHONE"
+    }
+  }
+}
+```
 
-This is a list of tasks that I need to complete to finish the project.
+I create a single JSON file that contains all of the photo metadata.
 
-Collect all JSON files into one folder so that I can consume them.
+From here I grab the data that I need and filter it to the start and end dates that I want to capture.
 
-I need to filter the JSON files as there are a number of files I don't want to bring in to my list. These include files with the words (case insensitive):
-
-* edited
-* mapsme
-* screenshot
-* effects
-* photos
-* animation
-* pano
-* ([0-9])
-
-Filter by a start and end date (so I can select photos from Europe)
-
-Join filtered JSON files into 1 large JSON file.
-
-Serialise all locations into a List.
-
-Filter this List into a new Photo List that only contains the data I need to build a KML file.
-
-Generate a KML file from the Photo List.
+I then reformat the data into a KML file that I can open in Google maps.
 
 ## To-Do
 

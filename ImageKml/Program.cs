@@ -12,7 +12,7 @@ namespace ImageKml
     {
         static void Main(string[] args)
         {
-            // var jsonData = KmlData.GetJsonFile(); // single sample KML file.
+            // var jsonData = KmlData.GetJsonFile(); // single sample KML file for testing.
 
             var baseDirectory = Environment.CurrentDirectory + @"\json\"; // @"\json\" for dev only @"\" for release 
 
@@ -26,15 +26,36 @@ namespace ImageKml
             string fullPath = baseDirectory + "\\" + fileName;
             File.WriteAllText(fullPath, json);
 
-            
-
             //// Deserialize JSON to the PhotoData objects - change Json to read file instead
             List<PhotoData>? photoData = JsonConvert.DeserializeObject<List<PhotoData>>(json);
 
-            DateTime startDate = DateTime.ParseExact("2023-08-21", "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            DateTime endDate = DateTime.ParseExact("2023-09-22", "yyyy-MM-dd", CultureInfo.InvariantCulture);
-
             List<Photo> photos = new List<Photo>();
+
+            var startDate = "2023-08-21";
+            var endDate = "2023-09-22";
+
+            CreatePhotoList(photoData, photos, startDate, endDate);
+
+            photoData.Clear();
+
+            StringBuilder sb = new();
+
+            sb = KmlData.CreateHeader(sb);
+
+            sb = KmlData.BuildContent(sb, photos);
+
+            sb = KmlData.CreateFooter(sb);
+
+            fileName = "Europe2023Photos.kml";
+            fullPath = baseDirectory + "\\" + fileName;
+            File.WriteAllText(fullPath, sb.ToString());
+        }
+
+        private static void CreatePhotoList(List<PhotoData> photoData, List<Photo> photos, string startdate, string enddate)
+        {
+            // Get the information from PhotoData that I really need and add it to a list of photos.
+            DateTime startDate = DateTime.ParseExact(startdate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            DateTime endDate = DateTime.ParseExact(enddate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             foreach (var fullPhoto in photoData)
             {
@@ -58,31 +79,6 @@ namespace ImageKml
                     }
                 }
             }
-
-            StringBuilder sb = new StringBuilder();
-
-            sb = KmlData.CreateHeader(sb);
-
-            sb = KmlData.BuildContent(sb, photos);
-
-            sb = KmlData.CreateFooter(sb);
-
-            fileName = "Europe2023Photos.kml";
-            fullPath = baseDirectory + "\\" + fileName;
-            File.WriteAllText(fullPath, sb.ToString());
-
-
-            //ImageData image = new ImageData
-            //{
-            //    Name = photoData.Title,
-            //    Description = photoData.Description,
-            //    TimeTaken = photoData.PhotoTakenTime.Formatted,
-            //    CreationTime = dateTime,
-            //    Latitude = photoData.GeoData.Latitude,
-            //    Longitude = photoData.GeoData.Longitude,
-            //    Altitude = photoData.GeoData.Altitude,
-            //    Url = photoData.Url
-            //};
         }
 
         private static string JoinJsonFiles(IEnumerable<string> jsonFileList)
@@ -107,7 +103,7 @@ namespace ImageKml
 
             json += "]\n";
 
-            json = json.Replace(",\n]", "]");
+            json = json.Replace(",\n]", "]");  // remove last comma
 
             return json;
         }
