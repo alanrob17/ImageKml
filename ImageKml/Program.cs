@@ -1,6 +1,9 @@
 ﻿using ImageKml.Data;
 using ImageKml.Models;
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ImageKml
@@ -15,23 +18,58 @@ namespace ImageKml
 
             var jsonFileList = KmlData.GetJsonFileList(baseDirectory);
 
-            string json = JoinJsonFiles(jsonFileList);
+            var json = JoinJsonFiles(jsonFileList);
 
+            baseDirectory = Environment.CurrentDirectory;
 
-            //// Deserialize JSON to the PhotoData object
-            //PhotoData photoData = JsonConvert.DeserializeObject<PhotoData>(jsonData);
+            string fileName = "alan.json";
+            string fullPath = baseDirectory + "\\" + fileName;
+            File.WriteAllText(fullPath, json);
 
-            //DateTime dateTime = DateTimeOffset.FromUnixTimeSeconds(photoData.PhotoTakenTime.Timestamp).UtcDateTime;
+            
 
-            //// Access properties
-            //Console.WriteLine("Title: " + photoData.Title);
-            //Console.WriteLine("Description: " + photoData.Description);
-            //Console.WriteLine("Time Taken: " + photoData.PhotoTakenTime.Formatted);
-            //Console.WriteLine("Creation Time: " + dateTime);
-            //Console.WriteLine("Latitude: " + photoData.GeoData.Latitude);
-            //Console.WriteLine("Longitude: " + photoData.GeoData.Longitude);
-            //Console.WriteLine("Altitude: " + photoData.GeoData.Altitude);
-            //Console.WriteLine("URL: " + photoData.Url);
+            //// Deserialize JSON to the PhotoData objects - change Json to read file instead
+            List<PhotoData>? photoData = JsonConvert.DeserializeObject<List<PhotoData>>(json);
+
+            DateTime startDate = DateTime.ParseExact("2023-08-21", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            DateTime endDate = DateTime.ParseExact("2023-09-22", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            List<Photo> photos = new List<Photo>();
+
+            foreach (var fullPhoto in photoData)
+            {
+                if (fullPhoto.GeoData.Latitude != 0.0 && fullPhoto.GeoData.Longitude != 0.0)
+                {
+                    Photo photo = new Photo
+                    {
+                        Name = fullPhoto.Title,
+                        Description = fullPhoto.Description,
+                        TimeTaken = fullPhoto.PhotoTakenTime.Formatted,
+                        CreationTime = DateTimeOffset.FromUnixTimeSeconds(fullPhoto.PhotoTakenTime.Timestamp).UtcDateTime,
+                        Latitude = fullPhoto.GeoData.Latitude,
+                        Longitude = fullPhoto.GeoData.Longitude,
+                        Altitude = (int)fullPhoto.GeoData.Altitude,
+                        Url = fullPhoto.Url
+                    };
+
+                    if (photo.CreationTime > startDate && photo.CreationTime < endDate)
+                    {
+                        photos.Add(photo);
+                    }
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            sb = KmlData.CreateHeader(sb);
+
+            sb = KmlData.BuildContent(sb, photos);
+
+            sb = KmlData.CreateFooter(sb);
+
+            fileName = "Europe2023Photos.kml";
+            fullPath = baseDirectory + "\\" + fileName;
+            File.WriteAllText(fullPath, sb.ToString());
 
 
             //ImageData image = new ImageData
@@ -50,20 +88,26 @@ namespace ImageKml
         private static string JoinJsonFiles(IEnumerable<string> jsonFileList)
         {
             var json = string.Empty;
+            json = "[\n";
 
             foreach (var jsonFile in jsonFileList)
             {
                 if (File.Exists(jsonFile))
                 {
                     string[] lines = File.ReadAllLines(jsonFile);
-
-                    foreach (string line in lines)
-                    {
-                        Console.WriteLine(line);
-                    }
                     
+                    foreach (var line in lines)
+                    {
+                        json += line + "\n";
+                    }
+                    json += ",\n";
                 }
             }
+
+
+            json += "]\n";
+
+            json = json.Replace(",\n]", "]");
 
             return json;
         }

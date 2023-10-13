@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace ImageKml.Models
 {
     // This is the final data I wanted to extract.
-    internal class ImageData
+    internal class Photo
     {
         public string? Name { get; set; }  // Title
         public string? Description { get; set; }
